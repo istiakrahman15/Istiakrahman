@@ -1,0 +1,7 @@
+Put your files here with these exact names:
+
+background.mp4  -> the background video (loops silently by default)
+background.mp3  -> the background music (plays when the user taps the audio button)
+
+That's it. index.html already points to assets/background.mp4 and assets/background.mp3,
+so once these two files are in this folder, everything works automatically.
