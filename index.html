@@ -21,7 +21,7 @@
     color:var(--white);
     font-family:'Rajdhani', sans-serif;
     overflow-x:hidden;
-    cursor: crosshair;
+    cursor: none; /* Hide default cursor for custom cyber cursor */
   }
 
   /* Custom Scrollbar */
@@ -29,66 +29,99 @@
   ::-webkit-scrollbar-track { background: #050505; }
   ::-webkit-scrollbar-thumb { background: var(--lavender); border-radius: 4px; }
 
-  /* animated background stand-in for video */
+  /* Custom Cyber Cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+  .cursor-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--lavender);
+    transition: transform 0.1s ease;
+  }
+  .cursor-ring {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--lavender);
+    box-shadow: 0 0 10px rgba(187,170,204,0.5);
+    transition: transform 0.2s ease, width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+  }
+  .cursor-ring.hover {
+    width: 60px;
+    height: 60px;
+    border-color: #ffffff;
+    background: rgba(187, 170, 204, 0.1);
+  }
+
+  /* Background Video Container */
   .bg{
     position:fixed;
     inset:0;
     z-index:0;
-    background:
-      linear-gradient(rgba(187, 170, 204, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(187, 170, 204, 0.03) 1px, transparent 1px),
-      radial-gradient(circle at 20% 20%, rgba(187,170,204,0.10), transparent 40%),
-      radial-gradient(circle at 80% 30%, rgba(187,170,204,0.08), transparent 45%),
-      radial-gradient(circle at 50% 80%, rgba(187,170,204,0.10), transparent 50%),
-      #000000;
-    background-size: 50px 50px, 50px 50px, 100% 100%, 100% 100%, 100% 100%;
+    background: #000000;
     overflow:hidden;
-    transition: transform 0.3s ease-out;
   }
-  .bg::before{
-    content:'';
-    position:absolute;
-    inset:-50%;
-    background-image:
-      radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,0.5), transparent),
-      radial-gradient(2px 2px at 80% 10%, rgba(255,255,255,0.4), transparent),
-      radial-gradient(1.5px 1.5px at 60% 60%, rgba(187,170,204,0.7), transparent),
-      radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,0.4), transparent),
-      radial-gradient(1.5px 1.5px at 90% 70%, rgba(187,170,204,0.6), transparent),
-      radial-gradient(2px 2px at 45% 40%, rgba(255,255,255,0.3), transparent);
-    animation: drift 30s linear infinite;
-    opacity:0.8;
-  }
-  @keyframes drift{
-    0%{ transform: translate(0,0); }
-    100%{ transform: translate(-4%, -6%); }
-  }
-  @keyframes floatDot{
-    0%,100%{ transform:translateY(0) scale(1); opacity:0.55; }
-    50%{ transform:translateY(-18px) scale(1.3); opacity:1; }
-  }
-
   .bg video{
     position:absolute;
     inset:0;
     width:100%;
     height:100%;
     object-fit:cover;
-    opacity:0.5;
+    opacity:0.8;
   }
+
+  /* HUD Grid Overlay */
+  .grid-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(187, 170, 204, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(187, 170, 204, 0.06) 1px, transparent 1px);
+    background-size: 50px 50px;
+    mix-blend-mode: screen;
+    transition: transform 0.3s ease-out;
+  }
+
+  /* Cinematic Vignette */
   .vignette{
     position:fixed;
     inset:0;
-    z-index:1;
+    z-index:2;
     pointer-events:none;
     background:
-      linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.75) 100%);
+      radial-gradient(circle at center, transparent 0%, transparent 40%, rgba(0,0,0,0.85) 100%),
+      linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.6) 100%);
+  }
+
+  /* CRT Scanline Effect */
+  .scanline-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+    background-size: 100% 4px;
+    opacity: 0.4;
+    animation: scanline-scroll 8s linear infinite;
+  }
+  @keyframes scanline-scroll {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100%; }
   }
 
   .particles{
     position:fixed;
     inset:0;
-    z-index:2;
+    z-index:3;
     pointer-events:none;
     overflow:hidden;
     transition: transform 0.3s ease-out;
@@ -100,6 +133,24 @@
     box-shadow:0 0 12px 3px rgba(187,170,204,0.7);
     animation:floatDot 6s ease-in-out infinite;
   }
+  @keyframes floatDot{
+    0%,100%{ transform:translateY(0) scale(1); opacity:0.55; }
+    50%{ transform:translateY(-18px) scale(1.3); opacity:1; }
+  }
+
+  /* Audio Visualizer Canvas */
+  #visualizer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  #visualizer.active { opacity: 1; }
 
   /* HUD Elements */
   .hud-top-left {
@@ -111,10 +162,12 @@
     color: var(--lavender);
     font-size: 14px;
     letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(187,170,204,0.6);
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
     display: flex;
     align-items: center;
     gap: 8px;
+    opacity: 0;
+    animation: fadeInLeft 1.5s ease 0.5s forwards;
   }
   .hud-top-left::before {
     content: '';
@@ -125,6 +178,10 @@
     box-shadow: 0 0 10px var(--lavender);
     animation: blink 1.5s infinite;
   }
+  @keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
 
   .main-container {
     position: relative;
@@ -132,6 +189,12 @@
     max-width: 700px;
     margin: 0 auto;
     padding: 40px;
+    opacity: 0;
+    animation: fadeInScale 1.5s ease 0.8s forwards;
+  }
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   /* HUD Corners */
@@ -141,8 +204,8 @@
     height: 30px;
     border: 2px solid var(--lavender);
     z-index: 6;
-    opacity: 0.7;
-    transition: all 0.3s ease;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 5px rgba(187,170,204,0.5));
   }
   .tl { top: 0; left: 0; border-right: none; border-bottom: none; }
   .tr { top: 0; right: 0; border-left: none; border-bottom: none; }
@@ -160,10 +223,6 @@
     justify-content:center;
     text-align:center;
     padding: 60px 20px;
-    background: rgba(5, 5, 5, 0.4);
-    border: 1px solid rgba(187, 170, 204, 0.1);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
   }
 
   .avatar-wrap{
@@ -202,7 +261,7 @@
     width:100%;
     height:100%;
     border-radius:50%;
-    background:linear-gradient(160deg, #1a1a1a, #000000);
+    background:radial-gradient(circle, rgba(10,10,10,0.9), rgba(0,0,0,0.95));
     border:2px solid var(--lavender);
     display:flex;
     align-items:center;
@@ -212,7 +271,7 @@
     font-weight:900;
     color:var(--lavender);
     z-index:2;
-    box-shadow:0 0 40px rgba(187,170,204,0.6), 0 0 80px rgba(187,170,204,0.25);
+    box-shadow:0 0 40px rgba(187,170,204,0.6), inset 0 0 20px rgba(0,0,0,0.8);
   }
 
   /* Online Status Dot */
@@ -244,44 +303,53 @@
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
-    text-shadow:0 0 30px rgba(187,170,204,0.5);
+    text-shadow: 0 0 10px rgba(0,0,0,0.9), 0 0 30px rgba(187,170,204,0.5);
     min-height:1.2em;
     transition:opacity 1s ease;
+    position: relative;
   }
-  /* Shimmer Animation for Name */
   h1.shimmer-active {
     animation: shimmerText 3s linear infinite;
   }
   @keyframes shimmerText {
     to { background-position: 200% center; }
   }
+  /* Glitch Effect */
+  h1.glitch {
+    animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) 2 reverse, glowPulse 1.8s ease forwards;
+  }
+  @keyframes glitch {
+    0% { transform: translate(0); text-shadow: 2px 0 #ff00c1, -2px 0 #00fff9; }
+    25% { transform: translate(-2px); text-shadow: -2px 0 #ff00c1, 2px 0 #00fff9; }
+    50% { transform: translate(0); text-shadow: 2px 0 #ff00c1, -2px 0 #00fff9; }
+    75% { transform: translate(2px); text-shadow: -2px 0 #ff00c1, 2px 0 #00fff9; }
+    100% { transform: translate(0); text-shadow: 2px 0 #ff00c1, -2px 0 #00fff9; }
+  }
 
   h1 .cursor, .tagline .cursor{
     -webkit-text-fill-color:var(--lavender);
     color:var(--lavender);
     animation: blink 0.8s step-end infinite;
+    text-shadow: 0 0 10px rgba(0,0,0,0.9);
   }
   @keyframes blink{
     0%,100%{ opacity:1; }
     50%{ opacity:0; }
   }
-  h1.glow-out{
-    animation: glowPulse 1.8s ease forwards;
-  }
   @keyframes glowPulse{
-    0%{ text-shadow:0 0 30px rgba(187,170,204,0.5); }
-    40%{ text-shadow:0 0 60px rgba(187,170,204,1), 0 0 100px rgba(187,170,204,0.7); }
-    100%{ text-shadow:0 0 40px rgba(187,170,204,0.8); }
+    0%{ text-shadow:0 0 10px rgba(0,0,0,0.9), 0 0 30px rgba(187,170,204,0.5); }
+    40%{ text-shadow:0 0 20px rgba(187,170,204,1), 0 0 60px rgba(187,170,204,0.7); }
+    100%{ text-shadow:0 0 15px rgba(187,170,204,0.8), 0 0 30px rgba(0,0,0,0.9); }
   }
 
   .tagline{
     margin-top:14px;
     font-size:clamp(16px, 3.5vw, 20px);
-    font-weight:500;
+    font-weight:600;
     color:var(--offwhite);
     letter-spacing:0.5px;
     min-height:1.4em;
-    text-shadow: 0 0 10px rgba(187,170,204,0.3);
+    text-shadow: 0 0 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7);
   }
 
   .socials{
@@ -291,12 +359,12 @@
     justify-content:center;
     margin-top:48px;
     padding: 20px 24px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(187, 170, 204, 0.15);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(187, 170, 204, 0.3);
     border-radius: 50px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
   }
   .icon-btn{
     width:60px;
@@ -376,6 +444,10 @@
     .icon-btn::after { display: none; }
     .hud-top-left { font-size: 12px; top: 16px; left: 16px; }
     .corner { width: 20px; height: 20px; }
+    /* Disable custom cursor on touch devices */
+    .cursor-dot, .cursor-ring { display: none; }
+    html, body { cursor: auto; }
+    .icon-btn, .audio-btn { cursor: pointer; }
   }
 
   @media (max-width:360px){
@@ -392,7 +464,7 @@
     width:56px;
     height:56px;
     border-radius:50%;
-    background:rgba(255,255,255,0.05);
+    background:rgba(0, 0, 0, 0.6);
     border:1px solid var(--lavender);
     color:var(--white);
     display:flex;
@@ -403,6 +475,7 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     transition: all 0.3s ease;
+    animation: promptPulse 2s infinite;
   }
   .audio-btn:hover{
     background:rgba(187,170,204,0.15);
@@ -410,6 +483,13 @@
   }
   .audio-btn.playing{
     animation: audioPulse 2s infinite;
+  }
+  .audio-btn.playing:hover {
+    animation: none;
+  }
+  @keyframes promptPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(187,170,204,0.4); border-color: var(--lavender); }
+    50% { box-shadow: 0 0 25px rgba(187,170,204,0.9); border-color: #fff; }
   }
   @keyframes audioPulse{
     0%, 100% { box-shadow: 0 0 10px rgba(187,170,204,0.4); }
@@ -444,17 +524,27 @@
 </head>
 <body>
 
+  <!-- Custom Cursor -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+
   <div class="bg">
     <video autoplay muted loop playsinline>
       <source src="assets/background.mp4" type="video/mp4">
     </video>
   </div>
   
+  <div class="grid-overlay"></div>
+  <div class="vignette"></div>
+  <div class="scanline-overlay"></div>
+
+  <!-- Audio Visualizer -->
+  <canvas id="visualizer"></canvas>
+
   <div class="hud-top-left">
     <span id="liveClock">00:00:00</span> // SYS_ONLINE
   </div>
 
-  <div class="vignette"></div>
   <div class="particles">
     <span style="width:6px; height:6px; top:8%; left:10%; animation-delay:0s;"></span>
     <span style="width:4px; height:4px; top:12%; left:40%; animation-delay:0.8s;"></span>
@@ -524,21 +614,79 @@
     const bgAudio = document.getElementById('bgAudio');
     const audioBtn = document.getElementById('audioBtn');
     
-    function toggleAudio(){
-      audioOn = !audioOn;
-      if(audioOn){ 
-        bgAudio.play().catch(()=>{}); 
-        audioBtn.classList.add('playing');
-      } else { 
-        bgAudio.pause(); 
-        audioBtn.classList.remove('playing');
+    // Audio Visualizer Setup
+    let audioCtx, analyser, source, dataArray, bufferLength;
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+
+    function setupVisualizer() {
+      canvas.width = window.innerWidth;
+      canvas.height = 150;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      source = audioCtx.createMediaElementSource(bgAudio);
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      analyser.fftSize = 256;
+      bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+    }
+
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      
+      if(!analyser) return;
+      
+      analyser.getByteFrequencyData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const barWidth = (canvas.width / bufferLength) * 2.5;
+      let x = 0;
+
+      for(let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i] / 255 * canvas.height;
+        
+        // Gradient for visualizer bars
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+        gradient.addColorStop(0, 'rgba(187, 170, 204, 0.1)');
+        gradient.addColorStop(1, 'rgba(187, 170, 204, 0.8)');
+        
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#BBAACC';
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+        x += barWidth + 1;
       }
     }
 
+    function toggleAudio(){
+      audioOn = !audioOn;
+      if(audioOn){ 
+        if(!audioCtx) setupVisualizer();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        
+        bgAudio.play().catch(()=>{}); 
+        audioBtn.classList.add('playing');
+        canvas.classList.add('active');
+        drawVisualizer();
+      } else { 
+        bgAudio.pause(); 
+        audioBtn.classList.remove('playing');
+        canvas.classList.remove('active');
+      }
+    }
+
+    // Resize Visualizer on window resize
+    window.addEventListener('resize', () => {
+      if(canvas) canvas.width = window.innerWidth;
+    });
+
+    // Icon Click Animation
     document.querySelectorAll('.icon-btn').forEach(btn=>{
       btn.addEventListener('click', function(e){
         this.classList.remove('clicked');
-        void this.offsetWidth; // restart animation
+        void this.offsetWidth;
         this.classList.add('clicked');
       });
     });
@@ -560,11 +708,37 @@
       const x = (e.clientX / window.innerWidth - 0.5) * 30;
       const y = (e.clientY / window.innerHeight - 0.5) * 30;
       
-      document.querySelector('.bg').style.transform = `translate(${x * 0.5}px, ${y * 0.5}px)`;
       document.querySelector('.particles').style.transform = `translate(${x}px, ${y}px)`;
+      document.querySelector('.grid-overlay').style.transform = `translate(${x * 0.5}px, ${y * 0.5}px)`;
     });
 
-    // Intro typewriter sequence: name types in, glows, stays visible; then tagline types in and stays.
+    // Custom Cursor Logic
+    const cursorDot = document.querySelector('.cursor-dot');
+    const cursorRing = document.querySelector('.cursor-ring');
+    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursorDot.style.left = mouseX + 'px';
+      cursorDot.style.top = mouseY + 'px';
+    });
+
+    function animateRing() {
+      ringX += (mouseX - ringX) * 0.15;
+      ringY += (mouseY - ringY) * 0.15;
+      cursorRing.style.left = ringX + 'px';
+      cursorRing.style.top = ringY + 'px';
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    document.querySelectorAll('.icon-btn, .audio-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
+    });
+
+    // Intro typewriter sequence
     function typeInto(el, text, speed, done){
       el.textContent = '';
       const cursor = document.createElement('span');
@@ -588,7 +762,10 @@
 
       typeInto(nameEl, 'ISTIAK RAHMAN', 90, ()=>{
         setTimeout(()=>{
-          nameEl.classList.add('glow-out', 'shimmer-active');
+          // Add glitch effect, then shimmer
+          nameEl.classList.add('glitch', 'shimmer-active');
+          setTimeout(() => nameEl.classList.remove('glitch'), 600);
+          
           typeInto(tagEl, "I don't seek power — I am power!", 45);
         }, 900);
       });
