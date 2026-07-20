@@ -21,7 +21,13 @@
     color:var(--white);
     font-family:'Rajdhani', sans-serif;
     overflow-x:hidden;
+    cursor: crosshair;
   }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #050505; }
+  ::-webkit-scrollbar-thumb { background: var(--lavender); border-radius: 4px; }
 
   /* animated background stand-in for video */
   .bg{
@@ -29,11 +35,15 @@
     inset:0;
     z-index:0;
     background:
+      linear-gradient(rgba(187, 170, 204, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(187, 170, 204, 0.03) 1px, transparent 1px),
       radial-gradient(circle at 20% 20%, rgba(187,170,204,0.10), transparent 40%),
       radial-gradient(circle at 80% 30%, rgba(187,170,204,0.08), transparent 45%),
       radial-gradient(circle at 50% 80%, rgba(187,170,204,0.10), transparent 50%),
       #000000;
+    background-size: 50px 50px, 50px 50px, 100% 100%, 100% 100%, 100% 100%;
     overflow:hidden;
+    transition: transform 0.3s ease-out;
   }
   .bg::before{
     content:'';
@@ -81,6 +91,7 @@
     z-index:2;
     pointer-events:none;
     overflow:hidden;
+    transition: transform 0.3s ease-out;
   }
   .particles span{
     position:absolute;
@@ -90,19 +101,69 @@
     animation:floatDot 6s ease-in-out infinite;
   }
 
+  /* HUD Elements */
+  .hud-top-left {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 10;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--lavender);
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(187,170,204,0.6);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hud-top-left::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--lavender);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--lavender);
+    animation: blink 1.5s infinite;
+  }
+
+  .main-container {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px;
+  }
+
+  /* HUD Corners */
+  .corner {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--lavender);
+    z-index: 6;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+  }
+  .tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+  .tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+  .bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+  .br { bottom: 0; right: 0; border-left: none; border-top: none; }
+
   main{
     position:relative;
     z-index:5;
-    min-height:100vh;
-    min-height:100dvh;
+    min-height:90vh;
+    min-height:90dvh;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    padding:24px;
     text-align:center;
-    max-width:640px;
-    margin:0 auto;
+    padding: 60px 20px;
+    background: rgba(5, 5, 5, 0.4);
+    border: 1px solid rgba(187, 170, 204, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
   }
 
   .avatar-wrap{
@@ -154,12 +215,32 @@
     box-shadow:0 0 40px rgba(187,170,204,0.6), 0 0 80px rgba(187,170,204,0.25);
   }
 
+  /* Online Status Dot */
+  .status-dot {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    width: 20px;
+    height: 20px;
+    background: #00ff9d;
+    border: 3px solid var(--black);
+    border-radius: 50%;
+    z-index: 3;
+    box-shadow: 0 0 10px #00ff9d;
+    animation: statusPulse 2s infinite;
+  }
+  @keyframes statusPulse {
+    0%, 100% { box-shadow: 0 0 5px #00ff9d; }
+    50% { box-shadow: 0 0 15px #00ff9d, 0 0 25px #00ff9d; }
+  }
+
   h1{
     font-family:'Orbitron', sans-serif;
     font-weight:900;
     font-size:clamp(32px, 8vw, 56px);
     letter-spacing:2px;
     background:linear-gradient(90deg, #ffffff 0%, #BBAACC 50%, #ffffff 100%);
+    background-size: 200% auto;
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
@@ -167,6 +248,14 @@
     min-height:1.2em;
     transition:opacity 1s ease;
   }
+  /* Shimmer Animation for Name */
+  h1.shimmer-active {
+    animation: shimmerText 3s linear infinite;
+  }
+  @keyframes shimmerText {
+    to { background-position: 200% center; }
+  }
+
   h1 .cursor, .tagline .cursor{
     -webkit-text-fill-color:var(--lavender);
     color:var(--lavender);
@@ -177,12 +266,12 @@
     50%{ opacity:0; }
   }
   h1.glow-out{
-    animation: glowOut 1.8s ease forwards;
+    animation: glowPulse 1.8s ease forwards;
   }
-  @keyframes glowOut{
-    0%{ text-shadow:0 0 30px rgba(187,170,204,0.5); opacity:1; }
-    40%{ text-shadow:0 0 60px rgba(187,170,204,1), 0 0 100px rgba(187,170,204,0.7); opacity:1; }
-    100%{ text-shadow:0 0 80px rgba(187,170,204,1); opacity:0; }
+  @keyframes glowPulse{
+    0%{ text-shadow:0 0 30px rgba(187,170,204,0.5); }
+    40%{ text-shadow:0 0 60px rgba(187,170,204,1), 0 0 100px rgba(187,170,204,0.7); }
+    100%{ text-shadow:0 0 40px rgba(187,170,204,0.8); }
   }
 
   .tagline{
@@ -192,6 +281,7 @@
     color:var(--offwhite);
     letter-spacing:0.5px;
     min-height:1.4em;
+    text-shadow: 0 0 10px rgba(187,170,204,0.3);
   }
 
   .socials{
@@ -200,36 +290,74 @@
     gap:16px;
     justify-content:center;
     margin-top:48px;
+    padding: 20px 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(187, 170, 204, 0.15);
+    border-radius: 50px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
   .icon-btn{
     width:60px;
     height:60px;
     border-radius:50%;
-    background:rgba(255,255,255,0.08);
-    border:2px solid rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1);
     display:flex;
     align-items:center;
     justify-content:center;
     color:var(--white);
     text-decoration:none;
-    transition:background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    transition:all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position:relative;
-    overflow:hidden;
+    overflow:visible;
   }
   .icon-btn:hover{
-    background:rgba(187,170,204,0.18);
+    background:rgba(187,170,204,0.15);
     border-color:var(--lavender);
-    transform:translateY(-3px);
+    transform:translateY(-5px);
+    box-shadow: 0 10px 20px rgba(187,170,204,0.2);
   }
+  
+  /* Tooltips for socials */
+  .icon-btn::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background: rgba(10, 10, 10, 0.9);
+    color: var(--lavender);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    border: 1px solid var(--lavender);
+    box-shadow: 0 0 10px rgba(187,170,204,0.4);
+  }
+  .icon-btn:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   .icon-btn.clicked{
     animation: iconClick 0.5s ease;
   }
   @keyframes iconClick{
     0%{ box-shadow:0 0 0 0 rgba(187,170,204,0.9); border-color:var(--lavender); }
     60%{ box-shadow:0 0 0 18px rgba(187,170,204,0); }
-    100%{ box-shadow:0 0 0 18px rgba(187,170,204,0); border-color:rgba(255,255,255,0.3); }
+    100%{ box-shadow:0 0 0 18px rgba(187,170,204,0); border-color:rgba(255,255,255,0.1); }
   }
-  .icon-btn svg{ width:26px; height:26px; fill:currentColor; }
+  .icon-btn svg{ width:26px; height:26px; fill:currentColor; transition: transform 0.3s ease; }
+  .icon-btn:hover svg{ transform: scale(1.1); }
 
   @media (min-width:1024px){
     .avatar-wrap{ width:200px; height:200px; }
@@ -241,10 +369,13 @@
     .icon-btn svg{ width:22px; height:22px; }
     .avatar-wrap{ width:140px; height:140px; margin-bottom:24px; }
     .avatar{ font-size:44px; }
-    main{ padding:16px; }
-    .socials{ gap:12px; margin-top:36px; }
+    main{ padding: 40px 10px; }
+    .socials{ gap:12px; margin-top:36px; padding: 14px 16px; }
     .audio-btn{ bottom:16px; right:16px; width:48px; height:48px; }
     .audio-btn svg{ width:20px; height:20px; }
+    .icon-btn::after { display: none; }
+    .hud-top-left { font-size: 12px; top: 16px; left: 16px; }
+    .corner { width: 20px; height: 20px; }
   }
 
   @media (max-width:360px){
@@ -261,26 +392,68 @@
     width:56px;
     height:56px;
     border-radius:50%;
-    background:rgba(255,255,255,0.08);
-    border:2px solid var(--lavender);
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--lavender);
     color:var(--white);
     display:flex;
     align-items:center;
     justify-content:center;
     cursor:pointer;
     z-index:20;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+  }
+  .audio-btn:hover{
+    background:rgba(187,170,204,0.15);
+    box-shadow: 0 0 15px rgba(187,170,204,0.4);
+  }
+  .audio-btn.playing{
+    animation: audioPulse 2s infinite;
+  }
+  @keyframes audioPulse{
+    0%, 100% { box-shadow: 0 0 10px rgba(187,170,204,0.4); }
+    50% { box-shadow: 0 0 25px rgba(187,170,204,0.9); border-color: #fff; }
   }
   .audio-btn svg{ width:24px; height:24px; fill:currentColor; }
+  
+  /* Equalizer bars */
+  .eq-container {
+    display: none;
+    gap: 4px;
+    align-items: flex-end;
+    height: 24px;
+  }
+  .audio-btn.playing .eq-container { display: flex; }
+  .audio-btn.playing #audioIcon { display: none; }
+  
+  .eq-bar {
+    width: 5px;
+    background: var(--lavender);
+    animation: eq 0.8s infinite ease-in-out;
+  }
+  .eq-bar:nth-child(1) { animation-delay: 0s; }
+  .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+  .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+  
+  @keyframes eq {
+    0%, 100% { height: 20%; }
+    50% { height: 100%; }
+  }
 </style>
 </head>
 <body>
 
   <div class="bg">
-    <!-- Put your video file at assets/background.mp4 (same folder as this html file) -->
     <video autoplay muted loop playsinline>
       <source src="assets/background.mp4" type="video/mp4">
     </video>
   </div>
+  
+  <div class="hud-top-left">
+    <span id="liveClock">00:00:00</span> // SYS_ONLINE
+  </div>
+
   <div class="vignette"></div>
   <div class="particles">
     <span style="width:6px; height:6px; top:8%; left:10%; animation-delay:0s;"></span>
@@ -296,54 +469,70 @@
     <span style="width:4px; height:4px; top:90%; left:15%; animation-delay:0.2s;"></span>
     <span style="width:3px; height:3px; top:95%; left:50%; animation-delay:1.7s;"></span>
   </div>
-  <!-- Put your audio file at assets/background.mp3 -->
+  
   <audio id="bgAudio" loop>
     <source src="assets/background.mp3" type="audio/mpeg">
   </audio>
 
+  <div class="main-container">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
 
-  <main>
-    <div class="avatar-wrap">
-      <div class="avatar-glow"></div>
-      <div class="avatar">IR</div>
-    </div>
+    <main>
+      <div class="avatar-wrap">
+        <div class="avatar-glow"></div>
+        <div class="avatar">IR</div>
+        <div class="status-dot" title="Online"></div>
+      </div>
 
-    <h1 id="nameText"></h1>
-    <p class="tagline" id="taglineText"></p>
+      <h1 id="nameText"></h1>
+      <p class="tagline" id="taglineText"></p>
 
-    <div class="socials">
-      <a class="icon-btn" href="https://github.com/istiakrahman15" target="_blank" aria-label="GitHub" data-name="GitHub">
-        <svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.42 7.86 10.96.57.1.78-.25.78-.55 0-.27-.01-1-.02-1.96-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.75 2.7 1.25 3.36.96.1-.75.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.4-5.27 5.69.42.36.78 1.08.78 2.18 0 1.57-.01 2.84-.01 3.23 0 .3.2.66.79.55A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
-      </a>
-      <a class="icon-btn" href="https://t.me/istiakrahman" target="_blank" aria-label="Telegram" data-name="Telegram">
-        <svg viewBox="0 0 24 24"><path d="M23 3 1 11.5c-.6.24-.6 1.1.01 1.32l5.5 1.83 2.1 6.6c.2.6.98.75 1.4.27l3.05-3.5 5.5 4.1c.55.4 1.34.1 1.47-.57L23.98 3.9c.14-.72-.55-1.28-1.24-.9zM8.9 14.15l9.5-6.2-8 7.4-.3 3.3-1.2-4.5z"/></svg>
-      </a>
-      <a class="icon-btn" href="https://instagram.com/istiakrahman_15" target="_blank" aria-label="Instagram" data-name="Instagram">
-        <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.05 1.97.24 2.43.4a4.9 4.9 0 0 1 1.77 1.15 4.9 4.9 0 0 1 1.15 1.77c.16.46.35 1.26.4 2.43.07 1.25.07 1.65.07 4.85s0 3.6-.07 4.85c-.05 1.17-.24 1.97-.4 2.43a4.9 4.9 0 0 1-1.15 1.77 4.9 4.9 0 0 1-1.77 1.15c-.46.16-1.26.35-2.43.4-1.25.07-1.65.07-4.85.07s-3.6 0-4.85-.07c-1.17-.05-1.97-.24-2.43-.4a4.9 4.9 0 0 1-1.77-1.15 4.9 4.9 0 0 1-1.15-1.77c-.16-.46-.35-1.26-.4-2.43C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.05-1.17.24-1.97.4-2.43a4.9 4.9 0 0 1 1.15-1.77 4.9 4.9 0 0 1 1.77-1.15c.46-.16 1.26-.35 2.43-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.1a6.7 6.7 0 1 0 0 13.4 6.7 6.7 0 0 0 0-13.4zm0 11.05a4.35 4.35 0 1 1 0-8.7 4.35 4.35 0 0 1 0 8.7zm6.95-11.3a1.56 1.56 0 1 1-3.12 0 1.56 1.56 0 0 1 3.12 0z"/></svg>
-      </a>
-      <a class="icon-btn" href="https://x.com/istiakrahman15" target="_blank" aria-label="X" data-name="X">
-        <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-7.6 8.7L23.3 22h-7.2l-5.6-6.9L4 22H1l8.1-9.3L.9 2h7.4l5.1 6.3L18.9 2zm-1.3 18h2L6.5 4H4.4l13.2 16z"/></svg>
-      </a>
-      <a class="icon-btn" href="https://discord.com/users/1195940501354975282" target="_blank" aria-label="Discord" data-name="Discord">
-        <svg viewBox="0 0 24 24"><path d="M20.3 4.4a19.4 19.4 0 0 0-4.9-1.5l-.24.5c1.8.44 2.8.98 3.8 1.7-1.6-.8-3.2-1.2-4.9-1.2s-3.3.4-4.9 1.2c1-.72 2.2-1.3 3.8-1.7l-.24-.5a19.4 19.4 0 0 0-4.9 1.5C1.9 8 1.2 11.5 1.5 15c1.5 1.15 3 1.85 4.4 2.3l.9-1.5c-.8-.3-1.5-.65-2.2-1.1.18.14.37.27.56.4 3.5 1.7 7.3 1.7 10.7 0 .2-.13.38-.26.56-.4-.7.45-1.4.8-2.2 1.1l.9 1.5c1.4-.45 2.9-1.15 4.4-2.3.3-4-.6-7.5-2.7-10.6zM8.7 13.4c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5zm6.6 0c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5z"/></svg>
-      </a>
-    </div>
-  </main>
+      <div class="socials">
+        <a class="icon-btn" href="https://github.com/istiakrahman15" target="_blank" aria-label="GitHub" data-name="GitHub">
+          <svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.42 7.86 10.96.57.1.78-.25.78-.55 0-.27-.01-1-.02-1.96-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.75 2.7 1.25 3.36.96.1-.75.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.4-5.27 5.69.42.36.78 1.08.78 2.18 0 1.57-.01 2.84-.01 3.23 0 .3.2.66.79.55A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        </a>
+        <a class="icon-btn" href="https://t.me/istiakrahman" target="_blank" aria-label="Telegram" data-name="Telegram">
+          <svg viewBox="0 0 24 24"><path d="M23 3 1 11.5c-.6.24-.6 1.1.01 1.32l5.5 1.83 2.1 6.6c.2.6.98.75 1.4.27l3.05-3.5 5.5 4.1c.55.4 1.34.1 1.47-.57L23.98 3.9c.14-.72-.55-1.28-1.24-.9zM8.9 14.15l9.5-6.2-8 7.4-.3 3.3-1.2-4.5z"/></svg>
+        </a>
+        <a class="icon-btn" href="https://instagram.com/istiakrahman_15" target="_blank" aria-label="Instagram" data-name="Instagram">
+          <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.05 1.97.24 2.43.4a4.9 4.9 0 0 1 1.77 1.15 4.9 4.9 0 0 1 1.15 1.77c.16.46.35 1.26.4 2.43.07 1.25.07 1.65.07 4.85s0 3.6-.07 4.85c-.05 1.17-.24 1.97-.4 2.43a4.9 4.9 0 0 1-1.15 1.77 4.9 4.9 0 0 1-1.77 1.15c-.46.16-1.26.35-2.43.4-1.25.07-1.65.07-4.85.07s-3.6 0-4.85-.07c-1.17-.05-1.97-.24-2.43-.4a4.9 4.9 0 0 1-1.77-1.15 4.9 4.9 0 0 1-1.15-1.77c-.16-.46-.35-1.26-.4-2.43C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.05-1.17.24-1.97.4-2.43a4.9 4.9 0 0 1 1.15-1.77 4.9 4.9 0 0 1 1.77-1.15c.46-.16 1.26-.35 2.43-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.1a6.7 6.7 0 1 0 0 13.4 6.7 6.7 0 0 0 0-13.4zm0 11.05a4.35 4.35 0 1 1 0-8.7 4.35 4.35 0 0 1 0 8.7zm6.95-11.3a1.56 1.56 0 1 1-3.12 0 1.56 1.56 0 0 1 3.12 0z"/></svg>
+        </a>
+        <a class="icon-btn" href="https://x.com/istiakrahman15" target="_blank" aria-label="X" data-name="X">
+          <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-7.6 8.7L23.3 22h-7.2l-5.6-6.9L4 22H1l8.1-9.3L.9 2h7.4l5.1 6.3L18.9 2zm-1.3 18h2L6.5 4H4.4l13.2 16z"/></svg>
+        </a>
+        <a class="icon-btn" href="https://discord.com/users/1195940501354975282" target="_blank" aria-label="Discord" data-name="Discord">
+          <svg viewBox="0 0 24 24"><path d="M20.3 4.4a19.4 19.4 0 0 0-4.9-1.5l-.24.5c1.8.44 2.8.98 3.8 1.7-1.6-.8-3.2-1.2-4.9-1.2s-3.3.4-4.9 1.2c1-.72 2.2-1.3 3.8-1.7l-.24-.5a19.4 19.4 0 0 0-4.9 1.5C1.9 8 1.2 11.5 1.5 15c1.5 1.15 3 1.85 4.4 2.3l.9-1.5c-.8-.3-1.5-.65-2.2-1.1.18.14.37.27.56.4 3.5 1.7 7.3 1.7 10.7 0 .2-.13.38-.26.56-.4-.7.45-1.4.8-2.2 1.1l.9 1.5c1.4-.45 2.9-1.15 4.4-2.3.3-4-.6-7.5-2.7-10.6zM8.7 13.4c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5zm6.6 0c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5z"/></svg>
+        </a>
+      </div>
+    </main>
+  </div>
 
   <button class="audio-btn" id="audioBtn" aria-label="Toggle audio" onclick="toggleAudio()">
     <svg id="audioIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-.77-3.29-2.03-4.24v8.48A4.98 4.98 0 0 0 16.5 12z"/></svg>
+    <div class="eq-container">
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+    </div>
   </button>
 
   <script>
     let audioOn = false;
     const bgAudio = document.getElementById('bgAudio');
+    const audioBtn = document.getElementById('audioBtn');
+    
     function toggleAudio(){
       audioOn = !audioOn;
-      const icon = document.getElementById('audioIcon');
-      icon.innerHTML = audioOn
-        ? '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-.77-3.29-2.03-4.24v8.48A4.98 4.98 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>'
-        : '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-.77-3.29-2.03-4.24v8.48A4.98 4.98 0 0 0 16.5 12z"/>';
-      if(audioOn){ bgAudio.play().catch(()=>{}); } else { bgAudio.pause(); }
+      if(audioOn){ 
+        bgAudio.play().catch(()=>{}); 
+        audioBtn.classList.add('playing');
+      } else { 
+        bgAudio.pause(); 
+        audioBtn.classList.remove('playing');
+      }
     }
 
     document.querySelectorAll('.icon-btn').forEach(btn=>{
@@ -354,7 +543,28 @@
       });
     });
 
-    // Intro typewriter sequence: name types in, glows, fades out; then tagline types in and stays.
+    // Live Clock
+    function updateClock() {
+      const clockElement = document.getElementById('liveClock');
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      clockElement.textContent = `${h}:${m}:${s}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Mouse Parallax Effect
+    document.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 30;
+      const y = (e.clientY / window.innerHeight - 0.5) * 30;
+      
+      document.querySelector('.bg').style.transform = `translate(${x * 0.5}px, ${y * 0.5}px)`;
+      document.querySelector('.particles').style.transform = `translate(${x}px, ${y}px)`;
+    });
+
+    // Intro typewriter sequence: name types in, glows, stays visible; then tagline types in and stays.
     function typeInto(el, text, speed, done){
       el.textContent = '';
       const cursor = document.createElement('span');
@@ -378,7 +588,7 @@
 
       typeInto(nameEl, 'ISTIAK RAHMAN', 90, ()=>{
         setTimeout(()=>{
-          nameEl.classList.add('glow-out');
+          nameEl.classList.add('glow-out', 'shimmer-active');
           typeInto(tagEl, "I don't seek power — I am power!", 45);
         }, 900);
       });
