@@ -3,9 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Istiak Rahman — developer. Find me on GitHub, Telegram, Instagram, X and Discord.">
-<title>Istiak Rahman</title>
+
+<!-- Primary Meta Tags -->
+<title>Istiak Rahman — Developer & Creator</title>
+<meta name="title" content="Istiak Rahman — Developer & Creator">
+<meta name="description" content="Istiak Rahman — developer. I don't seek power — I am power! Find me on GitHub, Telegram, Instagram, X and Discord.">
+<meta name="keywords" content="Istiak Rahman, developer, portfolio, GitHub, Telegram, Instagram, Discord, X, software engineer, web developer">
+<meta name="author" content="Istiak Rahman">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://istiakrahman.com/">
+<meta name="theme-color" content="#000000">
+
+<!-- Favicon Support -->
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+
+<!-- Open Graph / Facebook / WhatsApp / Messenger / Discord / LinkedIn -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://istiakrahman.com/">
+<meta property="og:title" content="Istiak Rahman — Developer & Creator">
+<meta property="og:description" content="I don't seek power — I am power! Find me on GitHub, Telegram, Instagram, X and Discord.">
+<meta property="og:image" content="/assets/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Istiak Rahman">
+
+<!-- Twitter / X Card Metadata -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://istiakrahman.com/">
+<meta name="twitter:title" content="Istiak Rahman — Developer & Creator">
+<meta name="twitter:description" content="I don't seek power — I am power! Find me on GitHub, Telegram, Instagram, X and Discord.">
+<meta name="twitter:image" content="/assets/preview.png">
+<meta name="twitter:creator" content="@istiakrahman15">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -29,7 +62,7 @@
   ::-webkit-scrollbar-track { background: #050505; }
   ::-webkit-scrollbar-thumb { background: var(--lavender); border-radius: 4px; }
 
-  /* Custom Cyber Cursor */
+  /* Custom Cyber Cursor - Optimized with transform */
   .cursor-dot, .cursor-ring {
     position: fixed;
     top: 0;
@@ -37,21 +70,20 @@
     border-radius: 50%;
     pointer-events: none;
     z-index: 9999;
-    transform: translate(-50%, -50%);
-    mix-blend-mode: difference;
+    transform: translate3d(-50%, -50%, 0);
+    will-change: transform;
   }
   .cursor-dot {
     width: 8px;
     height: 8px;
     background: var(--lavender);
-    transition: transform 0.1s ease;
   }
   .cursor-ring {
     width: 36px;
     height: 36px;
     border: 1px solid var(--lavender);
     box-shadow: 0 0 10px rgba(187,170,204,0.5);
-    transition: transform 0.2s ease, width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+    transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease, background 0.3s ease;
   }
   .cursor-ring.hover {
     width: 60px;
@@ -77,18 +109,17 @@
     opacity:0.8;
   }
 
-  /* HUD Grid Overlay */
+  /* HUD Grid Overlay - Removed mix-blend-mode for performance */
   .grid-overlay {
     position: fixed;
     inset: 0;
     z-index: 1;
     pointer-events: none;
     background-image:
-      linear-gradient(rgba(187, 170, 204, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(187, 170, 204, 0.06) 1px, transparent 1px);
+      linear-gradient(rgba(187, 170, 204, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(187, 170, 204, 0.08) 1px, transparent 1px);
     background-size: 50px 50px;
-    mix-blend-mode: screen;
-    transition: transform 0.3s ease-out;
+    will-change: transform;
   }
 
   /* Cinematic Vignette */
@@ -102,14 +133,19 @@
       linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.6) 100%);
   }
 
-  /* CRT Scanline Effect */
+  /* CRT Scanline Effect - Optimized with repeating-linear-gradient */
   .scanline-overlay {
     position: fixed;
     inset: 0;
     z-index: 4;
     pointer-events: none;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-    background-size: 100% 4px;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.15) 3px,
+      rgba(0, 0, 0, 0.15) 4px
+    );
     opacity: 0.4;
     animation: scanline-scroll 8s linear infinite;
   }
@@ -124,7 +160,7 @@
     z-index:3;
     pointer-events:none;
     overflow:hidden;
-    transition: transform 0.3s ease-out;
+    will-change: transform;
   }
   .particles span{
     position:absolute;
@@ -615,7 +651,7 @@
     const audioBtn = document.getElementById('audioBtn');
     
     // Audio Visualizer Setup
-    let audioCtx, analyser, source, dataArray, bufferLength;
+    let audioCtx, analyser, source, dataArray, bufferLength, animationId;
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
 
@@ -627,13 +663,13 @@
       source = audioCtx.createMediaElementSource(bgAudio);
       source.connect(analyser);
       analyser.connect(audioCtx.destination);
-      analyser.fftSize = 256;
+      analyser.fftSize = 128; // Lowered for performance
       bufferLength = analyser.frequencyBinCount;
       dataArray = new Uint8Array(bufferLength);
     }
 
     function drawVisualizer() {
-      requestAnimationFrame(drawVisualizer);
+      animationId = requestAnimationFrame(drawVisualizer);
       
       if(!analyser) return;
       
@@ -646,7 +682,6 @@
       for(let i = 0; i < bufferLength; i++) {
         const barHeight = dataArray[i] / 255 * canvas.height;
         
-        // Gradient for visualizer bars
         const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
         gradient.addColorStop(0, 'rgba(187, 170, 204, 0.1)');
         gradient.addColorStop(1, 'rgba(187, 170, 204, 0.8)');
@@ -674,6 +709,7 @@
         bgAudio.pause(); 
         audioBtn.classList.remove('playing');
         canvas.classList.remove('active');
+        if(animationId) cancelAnimationFrame(animationId); // Stop visualizer loop when paused
       }
     }
 
@@ -703,32 +739,42 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Mouse Parallax Effect
-    document.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 30;
-      const y = (e.clientY / window.innerHeight - 0.5) * 30;
-      
-      document.querySelector('.particles').style.transform = `translate(${x}px, ${y}px)`;
-      document.querySelector('.grid-overlay').style.transform = `translate(${x * 0.5}px, ${y * 0.5}px)`;
-    });
-
-    // Custom Cursor Logic
+    // Optimized Mouse Parallax & Custom Cursor via requestAnimationFrame
     const cursorDot = document.querySelector('.cursor-dot');
     const cursorRing = document.querySelector('.cursor-ring');
+    const gridOverlay = document.querySelector('.grid-overlay');
+    const particles = document.querySelector('.particles');
+    
     let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+    let parallaxX = 0, parallaxY = 0;
+    let isMouseMoveScheduled = false;
 
     document.addEventListener('mousemove', (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      cursorDot.style.left = mouseX + 'px';
-      cursorDot.style.top = mouseY + 'px';
+      
+      if (!isMouseMoveScheduled) {
+        isMouseMoveScheduled = true;
+        requestAnimationFrame(() => {
+          // Update Cursor
+          cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+          
+          // Calculate Parallax
+          parallaxX = (mouseX / window.innerWidth - 0.5) * 30;
+          parallaxY = (mouseY / window.innerHeight - 0.5) * 30;
+          
+          particles.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, 0)`;
+          gridOverlay.style.transform = `translate3d(${parallaxX * 0.5}px, ${parallaxY * 0.5}px, 0)`;
+          
+          isMouseMoveScheduled = false;
+        });
+      }
     });
 
     function animateRing() {
       ringX += (mouseX - ringX) * 0.15;
       ringY += (mouseY - ringY) * 0.15;
-      cursorRing.style.left = ringX + 'px';
-      cursorRing.style.top = ringY + 'px';
+      cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
       requestAnimationFrame(animateRing);
     }
     animateRing();
