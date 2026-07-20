@@ -565,7 +565,8 @@
   <div class="cursor-ring"></div>
 
   <div class="bg">
-    <video autoplay muted loop playsinline>
+    <!-- Video starts muted to bypass browser autoplay restrictions. The button below will unmute it. -->
+    <video id="bgVideo" autoplay muted loop playsinline>
       <source src="assets/background.mp4" type="video/mp4">
     </video>
   </div>
@@ -595,10 +596,6 @@
     <span style="width:4px; height:4px; top:90%; left:15%; animation-delay:0.2s;"></span>
     <span style="width:3px; height:3px; top:95%; left:50%; animation-delay:1.7s;"></span>
   </div>
-  
-  <audio id="bgAudio" loop>
-    <source src="assets/background.mp3" type="audio/mpeg">
-  </audio>
 
   <div class="main-container">
     <div class="corner tl"></div>
@@ -647,7 +644,7 @@
 
   <script>
     let audioOn = false;
-    const bgAudio = document.getElementById('bgAudio');
+    const bgVideo = document.getElementById('bgVideo');
     const audioBtn = document.getElementById('audioBtn');
     
     // Audio Visualizer Setup
@@ -660,7 +657,8 @@
       canvas.height = 150;
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       analyser = audioCtx.createAnalyser();
-      source = audioCtx.createMediaElementSource(bgAudio);
+      // Route the video's original audio through the Web Audio API for the visualizer
+      source = audioCtx.createMediaElementSource(bgVideo);
       source.connect(analyser);
       analyser.connect(audioCtx.destination);
       analyser.fftSize = 128; // Lowered for performance
@@ -701,12 +699,16 @@
         if(!audioCtx) setupVisualizer();
         if(audioCtx.state === 'suspended') audioCtx.resume();
         
-        bgAudio.play().catch(()=>{}); 
+        // Unmute the video to play its built-in original audio
+        bgVideo.muted = false; 
+        bgVideo.play().catch(()=>{}); 
+        
         audioBtn.classList.add('playing');
         canvas.classList.add('active');
         drawVisualizer();
       } else { 
-        bgAudio.pause(); 
+        // Mute the video's audio
+        bgVideo.muted = true; 
         audioBtn.classList.remove('playing');
         canvas.classList.remove('active');
         if(animationId) cancelAnimationFrame(animationId); // Stop visualizer loop when paused
