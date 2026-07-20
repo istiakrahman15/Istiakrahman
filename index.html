@@ -484,6 +484,7 @@
     .cursor-dot, .cursor-ring { display: none; }
     html, body { cursor: auto; }
     .icon-btn, .audio-btn { cursor: pointer; }
+    .unmute-prompt { right: 76px; bottom: 24px; }
   }
 
   @media (max-width:360px){
@@ -510,51 +511,60 @@
     z-index:20;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    transition: all 0.3s ease;
-    animation: promptPulse 2s infinite;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
   }
   .audio-btn:hover{
     background:rgba(187,170,204,0.15);
     box-shadow: 0 0 15px rgba(187,170,204,0.4);
   }
   .audio-btn.playing{
-    animation: audioPulse 2s infinite;
+    box-shadow: 0 0 15px rgba(187,170,204,0.6);
+    border-color: #fff;
   }
-  .audio-btn.playing:hover {
-    animation: none;
+  .audio-btn.prompt-pulse {
+    animation: promptPulse 2s infinite;
   }
   @keyframes promptPulse {
     0%, 100% { box-shadow: 0 0 10px rgba(187,170,204,0.4); border-color: var(--lavender); }
     50% { box-shadow: 0 0 25px rgba(187,170,204,0.9); border-color: #fff; }
   }
-  @keyframes audioPulse{
-    0%, 100% { box-shadow: 0 0 10px rgba(187,170,204,0.4); }
-    50% { box-shadow: 0 0 25px rgba(187,170,204,0.9); border-color: #fff; }
-  }
   .audio-btn svg{ width:24px; height:24px; fill:currentColor; }
-  
-  /* Equalizer bars */
-  .eq-container {
-    display: none;
-    gap: 4px;
-    align-items: flex-end;
-    height: 24px;
+
+  /* Unmute Prompt Tooltip */
+  .unmute-prompt {
+    position: fixed;
+    bottom: 36px;
+    right: 92px;
+    background: rgba(10, 10, 10, 0.9);
+    color: var(--lavender);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid var(--lavender);
+    box-shadow: 0 0 10px rgba(187,170,204,0.5);
+    opacity: 0;
+    transform: translateX(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    z-index: 20;
+    white-space: nowrap;
   }
-  .audio-btn.playing .eq-container { display: flex; }
-  .audio-btn.playing #audioIcon { display: none; }
-  
-  .eq-bar {
-    width: 5px;
-    background: var(--lavender);
-    animation: eq 0.8s infinite ease-in-out;
+  .unmute-prompt.show {
+    opacity: 1;
+    transform: translateX(0);
   }
-  .eq-bar:nth-child(1) { animation-delay: 0s; }
-  .eq-bar:nth-child(2) { animation-delay: 0.2s; }
-  .eq-bar:nth-child(3) { animation-delay: 0.4s; }
-  
-  @keyframes eq {
-    0%, 100% { height: 20%; }
-    50% { height: 100%; }
+  .unmute-prompt::after {
+    content: '';
+    position: absolute;
+    right: -7px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left: 7px solid var(--lavender);
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
   }
 </style>
 </head>
@@ -565,7 +575,7 @@
   <div class="cursor-ring"></div>
 
   <div class="bg">
-    <!-- Video starts muted to bypass browser autoplay restrictions. The button below will unmute it. -->
+    <!-- Video starts muted to bypass browser autoplay restrictions, JS will attempt to unmute. -->
     <video id="bgVideo" autoplay muted loop playsinline>
       <source src="assets/background.mp4" type="video/mp4">
     </video>
@@ -633,31 +643,35 @@
     </main>
   </div>
 
-  <button class="audio-btn" id="audioBtn" aria-label="Toggle audio" onclick="toggleAudio()">
-    <svg id="audioIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-.77-3.29-2.03-4.24v8.48A4.98 4.98 0 0 0 16.5 12z"/></svg>
-    <div class="eq-container">
-      <div class="eq-bar"></div>
-      <div class="eq-bar"></div>
-      <div class="eq-bar"></div>
-    </div>
+  <!-- Unmute Prompt -->
+  <div id="unmutePrompt" class="unmute-prompt">Tap to Unmute</div>
+
+  <button class="audio-btn prompt-pulse" id="audioBtn" aria-label="Toggle audio" onclick="toggleAudio()">
+    <svg id="audioIcon" viewBox="0 0 24 24"></svg>
   </button>
 
   <script>
-    let audioOn = false;
+    let isMuted = true; // Default to true, JS will attempt to unmute
     const bgVideo = document.getElementById('bgVideo');
     const audioBtn = document.getElementById('audioBtn');
-    
+    const audioIcon = document.getElementById('audioIcon');
+    const unmutePrompt = document.getElementById('unmutePrompt');
+
+    // SVG Paths for Icons
+    const ICON_ON = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-.77-3.29-2.03-4.24v8.48A4.98 4.98 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+    const ICON_OFF = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-.77-3.29-2.03-4.24v8.48A4.98 4.98 0 0 0 16.5 12zM19 11l-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2 1-1 2 2 2-2z"/>';
+
     // Audio Visualizer Setup
     let audioCtx, analyser, source, dataArray, bufferLength, animationId;
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
 
     function setupVisualizer() {
+      if (audioCtx) return; // Only setup once
       canvas.width = window.innerWidth;
       canvas.height = 150;
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       analyser = audioCtx.createAnalyser();
-      // Route the video's original audio through the Web Audio API for the visualizer
       source = audioCtx.createMediaElementSource(bgVideo);
       source.connect(analyser);
       analyser.connect(audioCtx.destination);
@@ -693,26 +707,33 @@
       }
     }
 
-    function toggleAudio(){
-      audioOn = !audioOn;
-      if(audioOn){ 
-        if(!audioCtx) setupVisualizer();
-        if(audioCtx.state === 'suspended') audioCtx.resume();
-        
-        // Unmute the video to play its built-in original audio
-        bgVideo.muted = false; 
-        bgVideo.play().catch(()=>{}); 
-        
+    function updateAudioUI() {
+      bgVideo.muted = isMuted;
+      if (isMuted) {
+        audioBtn.classList.remove('playing');
+        audioIcon.innerHTML = ICON_OFF;
+        canvas.classList.remove('active');
+        if (animationId) cancelAnimationFrame(animationId); // Stop visualizer loop
+      } else {
         audioBtn.classList.add('playing');
+        audioIcon.innerHTML = ICON_ON;
+        audioBtn.classList.remove('prompt-pulse');
+        unmutePrompt.classList.remove('show');
+        
+        if (!audioCtx) setupVisualizer();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        
         canvas.classList.add('active');
         drawVisualizer();
-      } else { 
-        // Mute the video's audio
-        bgVideo.muted = true; 
-        audioBtn.classList.remove('playing');
-        canvas.classList.remove('active');
-        if(animationId) cancelAnimationFrame(animationId); // Stop visualizer loop when paused
       }
+    }
+
+    function toggleAudio() {
+      isMuted = !isMuted;
+      try {
+        localStorage.setItem('audioPref', isMuted ? 'muted' : 'unmuted');
+      } catch (e) {}
+      updateAudioUI();
     }
 
     // Resize Visualizer on window resize
@@ -817,6 +838,43 @@
           typeInto(tagEl, "I don't seek power — I am power!", 45);
         }, 900);
       });
+
+      // Autoplay Logic
+      let savedPref = 'unmuted';
+      try {
+        savedPref = localStorage.getItem('audioPref') || 'unmuted';
+      } catch (e) {}
+
+      if (savedPref === 'muted') {
+        // User explicitly muted before
+        isMuted = true;
+        bgVideo.muted = true;
+        bgVideo.play().catch(()=>{});
+        updateAudioUI();
+      } else {
+        // Attempt to autoplay with sound (default behavior)
+        isMuted = false;
+        bgVideo.muted = false;
+        bgVideo.play().then(() => {
+          // Success! Browser allowed autoplay with sound
+          updateAudioUI();
+        }).catch(() => {
+          // Blocked! Fallback to muted and show prompt
+          isMuted = true;
+          bgVideo.muted = true;
+          bgVideo.play().then(() => {
+            // Successfully started muted playback
+            updateAudioUI();
+            // Show "Tap to Unmute" prompt
+            setTimeout(() => {
+              unmutePrompt.classList.add('show');
+            }, 1500);
+          }).catch(() => {
+            // Hard block, wait for user interaction entirely
+            updateAudioUI();
+          });
+        });
+      }
     });
   </script>
 
